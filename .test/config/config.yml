@@ -19,6 +19,9 @@ processing:
     extra: "--detect_adapter_for_pe"
   trim_galore:
     extra: "--gzip --paired"
+  umi_tools_extract:
+    enabled: true  # Set to true to enable UMI extraction
+    extra: "--bc-pattern=NNNNNNNN --bc-pattern2=NNNNNNNN" 
 
 mapping:
   tool: "star"
@@ -42,6 +45,9 @@ mapping:
     extra: "-m 4G"
   samtools_index:
     extra: ""
+  umi_tools_dedup: 
+    enabled: true  # Set to true to enable deduplication
+    extra: "--paired"  # or directional, cluster, adjacency, etc.
 
 mapping_stats:
   gffread:

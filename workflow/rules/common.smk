@@ -52,11 +52,15 @@ def get_fastq_pairs(wildcards):
 # get processed fastq files (after fastp or umi_tools)
 def get_processed_fastq(wildcards, regex=None):
 
-    processed_fastq = expand(
-                "results/{tool}/{{sample}}_{read}.fastq.gz",
-                read=["read1", "read2"] if is_paired_end() else ["read1"],
-                tool=config["processing"]["tool"])
-
+    if config["processing"]["umi_tools_extract"]["enabled"]:
+        processed_fastq = expand(
+                    "results/umi_tools/extract/{{sample}}_{read}.fastq.gz",
+                    read=["read1", "read2"] if is_paired_end() else ["read1"])
+    else: 
+        processed_fastq = expand(
+                    "results/{tool}/{{sample}}_{read}.fastq.gz",
+                    read=["read1", "read2"] if is_paired_end() else ["read1"],
+                    tool=config["processing"]["tool"])        
     if regex is None:  
         return processed_fastq
     else:
@@ -73,6 +77,18 @@ def get_bam(wildcards):
         sample=wildcards.sample,
         tool=config["mapping"]["tool"],
     )
+
+def get_bam_2(wildcards):
+    if config["mapping"]["umi_tools_dedup"]["enabled"]:
+        return f"results/umi_tools/dedup/{wildcards.sample}.bam"
+    else:
+        return f"results/samtools/sort/{wildcards.sample}.bam"
+
+def get_bai(wildcards):
+    if config["mapping"]["umi_tools_dedup"]["enabled"]:
+        return f"results/umi_tools/dedup/{wildcards.sample}.bai"
+    else:
+        return f"results/samtools/sort/{wildcards.sample}.bai"
 
 # get input for multiqc
 def get_multiqc_input(wildcards):

@@ -44,8 +44,21 @@ properties:
         properties:
           extra:
             type: string
-            description: additional arguments to pass to trim_galore     
-
+            description: additional arguments to pass to trim_galore
+      umi_tools_extract:
+        type: object
+        properties:
+          enabled: 
+            type: boolean
+            description: whether to extract UMIs with umi_tools extract
+          extra:
+            type: string 
+            description: additional arguments to pass to umi_tools extract
+          required:
+            - enabled           
+      required:
+        - tool
+        - umi_tools_extract
   mapping:
     type: object
     properties:
@@ -113,8 +126,20 @@ properties:
           extra:
             type: string
             description: additional arguments to pass to Samtools index
-    required:
-      - tool
+      umi_tools_dedup:
+        type: object
+        properties:
+          enabled: 
+            type: boolean
+            description: whether to dedup with umi_tools dedup
+          extra:
+            type: string 
+            description: additional arguments to pass to umi_tools dedup  
+          required:
+            - enabled           
+      required:
+        - tool
+        - umi_tools_dedup
   mapping_stats:
     type: object
     properties:
@@ -175,3 +200,21 @@ required:
   - mapping
   - mapping_stats
   - qc
+
+# Ensure that 
+if:
+  properties:
+      mapping:
+        properties:
+          umi_tools_dedup:
+            properties:
+              enabled:
+                const: true
+then:
+  properties:
+    processing:
+      properties:
+        umi_tools_extract:
+          properties:
+            enabled:
+              const: true

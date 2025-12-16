@@ -46,6 +46,46 @@ rule gffread_gff:
     wrapper:
         "v7.0.0/bio/gffread"
 
+rule umi_tools_dedup:
+    input:
+        bam="results/samtools/sort/{sample}.bam",
+        bai="results/samtools/sort/{sample}.bai",
+    output:
+        bam="results/umi_tools/dedup/{sample}.bam",
+    log:
+        "results/umi_tools/dedup/{sample}.log",
+    message:
+        "deduplicate reads using umi_tools"
+    params:
+        extra=config["mapping"]["umi_tools_dedup"]["extra"],
+        paired="--paired" if is_paired_end() else "",
+    conda:
+        "../envs/umi_tools.yml"
+    threads: 1
+    shell:
+        """
+        umi_tools dedup \
+            -I {input.bam} \
+            -S {output.bam} \
+            --log={log} \
+            {params.paired} \
+            {params.extra} 
+        """
+
+rule samtools_index_dedup:
+    input:
+        "results/umi_tools/dedup/{sample}.bam",
+    output:
+        "results/umi_tools/dedup/{sample}.bai",
+    log:
+        "results/umi_tools/dedup/{sample}_index.log",
+    message:
+        "index deduplicated reads"
+    params:
+        extra=config["mapping"]["samtools_index"]["extra"],
+    threads: 2
+    wrapper:
+        "v7.0.0/bio/samtools/index"
 
 rule rseqc_infer_experiment:
     input:
@@ -81,8 +121,8 @@ rule rseqc_bam_stat:
 
 rule deeptools_coverage:
     input:
-        bam="results/samtools/sort/{sample}.bam",
-        bai="results/samtools/sort/{sample}.bai",
+        bam=get_bam_2,
+        bai=get_bai,
     output:
         "results/deeptools/coverage/{sample}.bw",
     threads: 4

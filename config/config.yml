@@ -19,7 +19,10 @@ processing:
     extra: ""
   trim_galore:
     extra: "--gzip --paired"
-    
+  umi_tools_extract:
+    enabled: false  # Set to true to enable UMI extraction
+    extra: "--bc-pattern=NNNNNNNN --bc-pattern2=NNNNNNNN" 
+
 mapping:
   tool: "bwa_mem2"
   bowtie2:
@@ -42,6 +45,9 @@ mapping:
     extra: "-m 4G"
   samtools_index:
     extra: ""
+  umi_tools_dedup: 
+    enabled: false  # Set to true to enable deduplication
+    extra: "--paired"  # or directional, cluster, adjacency, etc.
 
 mapping_stats:
   gffread:
