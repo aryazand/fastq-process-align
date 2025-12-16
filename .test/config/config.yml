@@ -14,11 +14,14 @@ get_genome:
     ]
 
 processing:
+  tool: "trim_galore"
   fastp:
-    extra: ""
+    extra: "--detect_adapter_for_pe"
+  trim_galore:
+    extra: "--gzip --paired"
 
 mapping:
-  tool: "bwa_mem2"
+  tool: "star"
   bowtie2:
     index: ""
     extra: ""

@@ -15,10 +15,7 @@ rule minimap2_index:
 rule minimap2_align:
     input:
         target=rules.minimap2_index.output.index,
-        query=expand(
-            "results/fastp/{{sample}}_{read}.fastq.gz",
-            read=["read1", "read2"] if is_paired_end() else ["read1"],
-        ),
+        query=get_processed_fastq,
     output:
         "results/minimap2/align/{sample}/mapped.bam",
     log:

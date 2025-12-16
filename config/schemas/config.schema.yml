@@ -29,12 +29,22 @@ properties:
   processing:
     type: object
     properties:
+      tool: 
+        type: string
+        description: which tool is being used to process fastq files
       fastp:
         type: object
         properties:
           extra:
             type: string
             description: additional arguments to pass to Fastp
+      trim_galore:
+        type: object
+        properties:
+          extra:
+            type: string
+            description: additional arguments to pass to trim_galore     
+
   mapping:
     type: object
     properties:

@@ -63,3 +63,21 @@ rule fastp:
         mem_mb=4096,
     wrapper:
         "v7.0.0/bio/fastp"
+
+rule trim_galore:
+    input:
+        get_fastq_pairs,
+    output:
+        fasta_fwd="results/trim_galore/{sample}_read1.fastq.gz",
+        report_fwd="results/trim_galore/{sample}_read1.fastq.gz_trimming_report.txt",
+        fasta_rev="results/trim_galore/{sample}_read2.fastq.gz",
+        report_rev="results/trim_galore/{sample}_read2.fastq.gz_trimming_report.txt",
+    message:
+        "trimming and QC filtering reads using fastp"
+    threads: 2
+    log:
+        "results/trim_galore/{sample}.log",
+    params:
+        extra=config["processing"]["trim_galore"]["extra"],
+    wrapper:
+       "v3.14.1/bio/trim_galore/pe"

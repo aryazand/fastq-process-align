@@ -2,6 +2,7 @@
 import pandas as pd
 from snakemake.utils import validate
 from pathlib import Path
+import re
 
 # read sample sheet
 samples = (
@@ -48,6 +49,23 @@ def get_fastq_pairs(wildcards):
     )
 
 
+# get processed fastq files (after fastp or umi_tools)
+def get_processed_fastq(wildcards, regex=None):
+
+    processed_fastq = expand(
+                "results/{tool}/{{sample}}_{read}.fastq.gz",
+                read=["read1", "read2"] if is_paired_end() else ["read1"],
+                tool=config["processing"]["tool"])
+
+    if regex is None:  
+        return processed_fastq
+    else:
+        return [s for s in processed_fastq if re.search(regex, s)]
+
+# determine processing tool output directory
+def get_processing_dir():
+    return f"results/{config['processing']['tool']}"
+
 # get bam files
 def get_bam(wildcards):
     return expand(
@@ -65,6 +83,17 @@ def get_multiqc_input(wildcards):
         read=["read1", "read2"] if is_paired_end() else ["read1"],
         ext=["html", "zip"],
     )
+    if config["processing"]["tool"] == "fastp":
+        result += expand(
+            "results/fastp/{sample}.json",
+            sample=samples.index,
+        )
+    elif config["processing"]["tool"] == "trim_galore":
+        result += expand(
+            "results/trim_galore/{sample}_{read}.fastq.gz_trimming_report.txt",
+            sample=samples.index,
+            read=["read1", "read2"] if is_paired_end() else ["read1"],
+        )
     result += expand(
         "results/{tool}/align/{sample}/mapped.bam",
         sample=samples.index,

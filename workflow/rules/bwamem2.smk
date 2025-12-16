@@ -20,10 +20,7 @@ rule bwa_mem2_index:
 
 rule bwa_mem2:
     input:
-        reads=expand(
-            "results/fastp/{{sample}}_{read}.fastq.gz",
-            read=["read1", "read2"] if is_paired_end() else ["read1"],
-        ),
+        reads=get_processed_fastq,
         idx=rules.bwa_mem2_index.output,
     output:
         "results/bwa_mem2/align/{sample}/mapped.bam",
@@ -38,4 +35,4 @@ rule bwa_mem2:
         sort_extra=config["mapping"]["bwa_mem2"]["sort_extra"],
     threads: 8
     wrapper:
-        "v6.2.0/bio/bwa-mem2/mem"
+        "v7.6.0/bio/bwa-mem2/mem"

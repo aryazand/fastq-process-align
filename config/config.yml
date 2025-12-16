@@ -14,9 +14,12 @@ get_genome:
     ]
 
 processing:
+  tool: "fastp"
   fastp:
     extra: ""
-
+  trim_galore:
+    extra: "--gzip --paired"
+    
 mapping:
   tool: "bwa_mem2"
   bowtie2:
