@@ -32,6 +32,7 @@ properties:
       tool: 
         type: string
         description: which tool is being used to process fastq files
+        enum: ["fastp", "trim_galore"]
       fastp:
         type: object
         properties:
@@ -51,6 +52,7 @@ properties:
       tool:
         type: string
         description: mapping tool to use, one of 'bowtie2', 'bwa_mem2', 'star'
+        enum: ["bowtie2", "bwa_mem2", "star", "minimap2"]
       bowtie2:
         type: object
         properties:
