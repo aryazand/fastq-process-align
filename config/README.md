@@ -1,9 +1,6 @@
 ## Workflow overview
 
-This workflow is a best-practice workflow for mapping of reads to reference genomes, minimalistic and simple.
-
-It will attempt to map reads to the reference using one of the included mappers, report read and experiment statistics, create coverage profiles, quantify variants (such as SNPs) using two different tools, and predict the effect of these variants.
-All of this is performed with minimal input and without lookups to external databases (e.g. for variant effects), which makes the workflow ideal for bacteria and other low-complexity non-model organisms.
+This workflow is a best-practice workflow for mapping of reads to reference genomes, minimalistic and simple. It will attempt to map reads to the reference using one of the included mappers, report read and experiment statistics
 
 The workflow is built using [snakemake](https://snakemake.readthedocs.io/en/stable/) and consists of the following steps:
 
@@ -17,10 +14,7 @@ The workflow is built using [snakemake](https://snakemake.readthedocs.io/en/stab
    4. (`minimap2`)[https://github.com/lh3/minimap2]
 5. Determine experiment type, get mapping stats (`rseqc`)
 6. Generate `bigwig` or `bedgaph` coverage profiles (`deeptools`)
-7. Quantify variations and SNPs (`bcftools`, `freebayes`)
-8. Predict effect of variants such as premature stop codons (`VEP` or `SnpEff`)
-9. Create consensus of variants and create a visual report (`R markdown`)
-10. Collect statistics from tool output (`MultiQC`)
+7. Collect statistics from tool output (`MultiQC`)
 
 ## Running the workflow
 
@@ -81,29 +75,6 @@ This table lists all parameters that can be used to run the workflow.
 | _deeptools_coverage_     |         |                                                          |                   |
 | genome_size              | integer | genome size in base pairs                                | `1000`            |
 | extra                    | string  | additional arguments to DeepTools bamCoverage            |                   |
-| **variant_calling**      |         |                                                          |                   |
-| _bcftools_pileup_        |         |                                                          |                   |
-| uncompressed             | boolean | whether to output uncompressed BCF files                 | `False`           |
-| extra                    | string  | additional arguments to BCFtools pileup                  |                   |
-| _bcftools_call_          |         |                                                          |                   |
-| uncompressed             | boolean | whether to output uncompressed VCF files                 | `False`           |
-| caller                   | string  | use '-c' for consensus or '-m' for multiallelic          | `-c`              |
-| extra                    | string  | additional arguments to BCFtools view                    |                   |
-| _bcftools_view_          |         |                                                          |                   |
-| extra                    | string  | additional arguments to BCFtools call                    |                   |
-| _bcftools_filter_        |         |                                                          |                   |
-| filter                   | string  | expression by which to filter BCF/VCF result             | `-e 'ALT=\".\"'`  |
-| extra                    | string  | additional arguments to BCFtools filter                  |                   |
-| _freebayes_              |         |                                                          |                   |
-| extra                    | string  | additional arguments to Freebayes call                   |                   |
-| **variant_annotation**   |         |                                                          |                   |
-| tool                     | string  | annotation tool to use, one of 'vep', 'snpeff'           | `vep`             |
-| _vep_                    |         |                                                          |                   |
-| convert_gff              | boolean | whether to convert NCBI GFF to Ensemble style GFF        | `True`            |
-| plugins                  | array   | VEP plugins to use                                       | `[]`              |
-| extra                    | string  | additional arguments to VEP                              | see config.yml    |
-| _snpeff_                 |         |                                                          |                   |
-| extra                    | string  | additional arguments to SnpEff                           | see config.yml    |
 | **qc**                   |         |                                                          |                   |
 | _fastqc_                 |         |                                                          |                   |
 | extra                    | string  | additional arguments to FastQC                           |                   |
