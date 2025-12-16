@@ -51,37 +51,9 @@ mapping_stats:
     genome_size: 1000
     extra: ""
 
-variant_calling:
-  tool: "freebayes"
-  bcftools_pileup:
-    uncompressed: False
-    extra: "--max-depth 1000 --min-BQ 20"
-  bcftools_call:
-    uncompressed: False
-    caller: "-c"
-    extra: ""
-  bcftools_view:
-    extra: ""
-  bcftools_filter:
-    filter: '-e ''ALT="."'''
-    extra: ""
-  freebayes:
-    extra: "--ploidy 1 --min-base-quality 20 --min-alternate-fraction 0.75"
-
-variant_annotation:
-  tool: "vep"
-  vep:
-    convert_gff: True
-    plugins: []
-    extra: "--everything --species custom_bacteria --distance 0"
-  snpeff:
-    extra: "-nodownload -ud 0"
-
 qc:
   multiqc:
     extra: "--verbose --dirs"
   fastqc:
     extra: "--quiet"
 
-report:
-  minimum_variant_count: 2

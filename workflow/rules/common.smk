@@ -56,21 +56,6 @@ def get_bam(wildcards):
         tool=config["mapping"]["tool"],
     )
 
-
-# get variant files to make consensus
-def get_variants(wildcards):
-    return expand(
-        "results/{caller}/effect/{sample}{ext}.gz",
-        caller=wildcards.caller,
-        sample=samples.index,
-        ext=(
-            "_vep.vcf"
-            if config["variant_annotation"]["tool"] == "vep"
-            else "_snpeff.vcf"
-        ),
-    )
-
-
 # get input for multiqc
 def get_multiqc_input(wildcards):
     result = []
@@ -97,21 +82,5 @@ def get_multiqc_input(wildcards):
     result += expand(
         "results/deeptools/coverage/{sample}.bw",
         sample=samples.index,
-    )
-    result += expand(
-        "results/{caller}/call/{sample}{ext}",
-        sample=samples.index,
-        caller=config["variant_calling"]["tool"],
-        ext=["_stats.txt", "_all.vcf", "_variants.vcf"],
-    )
-    result += expand(
-        "results/{caller}/effect/{sample}{ext}",
-        sample=samples.index,
-        caller=config["variant_calling"]["tool"],
-        ext=(
-            ["_vep.vcf", "_vep.html"]
-            if config["variant_annotation"]["tool"] == "vep"
-            else ["_snpeff.vcf", "_snpeff.csv"]
-        ),
     )
     return result
