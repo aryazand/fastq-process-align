@@ -10,6 +10,8 @@ This is a clone and modification of [[https://github.com/MPUSP/snakemake-simple-
 
 - Add in usage information
 - Add in DAG information
+- Add support for CRAM files
+- Make certain intermediate files at temporary
 
 ## Deployment options
 
