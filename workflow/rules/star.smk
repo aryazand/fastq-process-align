@@ -22,6 +22,7 @@ rule star_align:
     output:
         aln="results/star/align/{sample}/mapped.bam",
         log_final="results/star/align/{sample}/Log.final.out",
+        sj="results/star/align/{sample}/SJ.out.tab",
     log:
         "results/star/align/{sample}/mapped.log",
     message:
