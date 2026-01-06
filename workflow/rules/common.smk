@@ -116,10 +116,6 @@ def get_multiqc_input(wildcards):
         tool=config["mapping"]["tool"],
     )
     result += expand(
-        "results/fastp/{sample}.json",
-        sample=samples.index,
-    )
-    result += expand(
         "results/rseqc/{tool}/{sample}.txt",
         sample=samples.index,
         tool=["infer_experiment", "bam_stat"],
