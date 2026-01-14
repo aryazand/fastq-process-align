@@ -128,6 +128,8 @@ rule deeptools_coverage:
         bai=get_bai,
     output:
         "results/deeptools/coverage/{sample}.bw",
+    wildcard_constraints:
+        sample="|".join(map(re.escape, samples.index)),
     threads: 4
     params:
         effective_genome_size=config["mapping_stats"]["deeptools_coverage"][
