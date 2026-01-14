@@ -46,6 +46,7 @@ rule gffread_gff:
     wrapper:
         "v7.0.0/bio/gffread"
 
+
 rule umi_tools_dedup:
     input:
         bam="results/samtools/sort/{sample}.bam",
@@ -72,6 +73,7 @@ rule umi_tools_dedup:
             {params.extra} 
         """
 
+
 rule samtools_index_dedup:
     input:
         "results/umi_tools/dedup/{sample}.bam",
@@ -86,6 +88,7 @@ rule samtools_index_dedup:
     threads: 2
     wrapper:
         "v7.0.0/bio/samtools/index"
+
 
 rule rseqc_infer_experiment:
     input:

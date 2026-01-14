@@ -16,8 +16,12 @@ rule star_index:
 
 rule star_align:
     input:
-        fq1=lambda wildcards: get_processed_fastq(wildcards.sample, regex = "read1"),
-        fq2=lambda wildcards: get_processed_fastq(wildcards.sample, regex = "read2") if is_paired_end() else [],
+        fq1=lambda wildcards: get_processed_fastq(wildcards.sample, regex="read1"),
+        fq2=lambda wildcards: (
+            get_processed_fastq(wildcards.sample, regex="read2")
+            if is_paired_end()
+            else []
+        ),
         idx=rules.star_index.output,
     output:
         aln="results/star/align/{sample}/mapped.bam",

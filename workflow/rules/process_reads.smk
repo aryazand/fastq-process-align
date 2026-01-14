@@ -64,6 +64,7 @@ rule fastp:
     wrapper:
         "v7.0.0/bio/fastp"
 
+
 rule trim_galore:
     input:
         get_fastq_pairs,
@@ -80,14 +81,15 @@ rule trim_galore:
     params:
         extra=config["processing"]["trim_galore"]["extra"],
     wrapper:
-       "v3.14.1/bio/trim_galore/pe"
+        "v3.14.1/bio/trim_galore/pe"
+
 
 rule umi_tools_extract:
     input:
         fastq=expand(
             "results/{folder}/{{sample}}_{read}.fastq.gz",
             read=["read1", "read2"] if is_paired_end() else ["read1"],
-            folder = config["processing"]["tool"]
+            folder=config["processing"]["tool"],
         ),
     output:
         fastq=expand(
