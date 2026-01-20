@@ -108,8 +108,8 @@ rule umi_tools_extract:
             if is_paired_end()
             else f"-I {input.fastq[0]} -S {wildcards.sample}_read1.fastq.gz"
         ),
-    conda:
-        "../envs/umi_tools.yml"
+    container:
+        "docker://quay.io/biocontainers/umi_tools:1.1.6--py310h1fe012e_0"
     threads: 1
     shell:
         """

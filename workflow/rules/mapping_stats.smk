@@ -60,9 +60,9 @@ rule umi_tools_dedup:
     params:
         extra=config["mapping"]["umi_tools_dedup"]["extra"],
         paired="--paired" if is_paired_end() else "",
-    conda:
-        "../envs/umi_tools.yml"
-    threads: 1
+    container:
+        "docker://quay.io/biocontainers/umi_tools:1.1.6--py310h1fe012e_0"
+    threads: 5
     shell:
         """
         umi_tools dedup \
