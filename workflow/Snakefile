@@ -14,12 +14,6 @@ include: "rules/minimap2.smk"
 include: "rules/mapping_stats.smk"
 include: "rules/qc.smk"
 
-
-# container definition (optional)
-# -----------------------------------------------------
-container: "oras://ghcr.io/mpusp/snakemake-simple-mapping:latest"
-
-
 # optional messages, log and error handling
 # -----------------------------------------------------
 onstart:
