@@ -28,6 +28,7 @@ rule bowtie2_align:
         idx=rules.bowtie2_build.output,
     output:
         "results/bowtie2/align/{sample}/mapped.bam",
+        metrics="results/bowtie2/align/{sample}/metrics.txt",
     log:
         "results/bowtie2/align/{sample}/mapped.log",
     message:
