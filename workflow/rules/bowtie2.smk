@@ -17,7 +17,7 @@ rule bowtie2_build:
         "build bowtie2 index"
     params:
         extra=config["mapping"]["bowtie2"]["index"],
-    threads: 1
+    threads: 10
     wrapper:
         "v7.0.0/bio/bowtie2/build"
 
