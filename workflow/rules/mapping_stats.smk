@@ -32,7 +32,7 @@ rule samtools_index:
 
 rule gffread_gff:
     input:
-        fasta=rules.get_genome.output.fasta,
+        fasta=get_genome_for_mapping,
         annotation=rules.get_genome.output.gff,
     output:
         records="results/get_genome/genome.bed",
