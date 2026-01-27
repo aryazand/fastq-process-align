@@ -14,6 +14,39 @@ rule get_fastq:
         "echo 'made symbolic link from {input} to {output.fastq}' > {log}"
 
 
+rule umi_tools_extract:
+    input:
+        fastq=expand(
+            "results/get_fastq/{{sample}}_{read}.fastq.gz",
+            read=["read1", "read2"] if is_paired_end() else ["read1"],
+        ),
+    output:
+        fastq=expand(
+            "results/umi_tools/extract/{{sample}}_{read}.fastq.gz",
+            read=["read1", "read2"] if is_paired_end() else ["read1"],
+        ),
+    log:
+        "results/umi_tools/extract/{sample}.log",
+    message:
+        "extracting UMIs using umi_tools"
+    params:
+        extra=config["processing"]["umi_tools_extract"]["extra"],
+        input_args=lambda wildcards, input: (
+            f"-I {input.fastq[0]} -S {wildcards.sample}_read1.fastq.gz "
+            f"--read2-in={input.fastq[1]} --read2-out={wildcards.sample}_read2.fastq.gz"
+            if is_paired_end()
+            else f"-I {input.fastq[0]} -S {wildcards.sample}_read1.fastq.gz"
+        ),
+    container:
+        "docker://quay.io/biocontainers/umi_tools:1.1.6--py310h1fe012e_0"
+    threads: 1
+    shell:
+        """
+        umi_tools extract {params.extra} {params.input_args} -L {log}
+        mv {wildcards.sample}_*.fastq.gz results/umi_tools/extract/
+        """
+
+
 rule fastp:
     input:
         sample=get_fastq_pairs,
@@ -54,37 +87,3 @@ rule trim_galore:
         extra=config["processing"]["trim_galore"]["extra"],
     wrapper:
         "v3.14.1/bio/trim_galore/pe"
-
-
-rule umi_tools_extract:
-    input:
-        fastq=expand(
-            "results/{folder}/{{sample}}_{read}.fastq.gz",
-            read=["read1", "read2"] if is_paired_end() else ["read1"],
-            folder=config["processing"]["tool"],
-        ),
-    output:
-        fastq=expand(
-            "results/umi_tools/extract/{{sample}}_{read}.fastq.gz",
-            read=["read1", "read2"] if is_paired_end() else ["read1"],
-        ),
-    log:
-        "results/umi_tools/extract/{sample}.log",
-    message:
-        "extracting UMIs using umi_tools"
-    params:
-        extra=config["processing"]["umi_tools_extract"]["extra"],
-        input_args=lambda wildcards, input: (
-            f"-I {input.fastq[0]} -S {wildcards.sample}_read1.fastq.gz "
-            f"--read2-in={input.fastq[1]} --read2-out={wildcards.sample}_read2.fastq.gz"
-            if is_paired_end()
-            else f"-I {input.fastq[0]} -S {wildcards.sample}_read1.fastq.gz"
-        ),
-    container:
-        "docker://quay.io/biocontainers/umi_tools:1.1.6--py310h1fe012e_0"
-    threads: 1
-    shell:
-        """
-        umi_tools extract {params.extra} {params.input_args} -L {log}
-        mv {wildcards.sample}_*.fastq.gz results/umi_tools/extract/
-        """

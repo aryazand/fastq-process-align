@@ -43,7 +43,12 @@ def get_fastq(wildcards):
 # get pairs of fastq files for fastp
 def get_fastq_pairs(wildcards):
     return expand(
-        "results/get_fastq/{sample}_{read}.fastq.gz",
+        "results/{folder}/{sample}_{read}.fastq.gz",
+        folder=(
+            "umi_tools/extract"
+            if config["processing"]["umi_tools_extract"]["enabled"]
+            else "get_fastq"
+        ),
         sample=wildcards.sample,
         read=["read1", "read2"] if is_paired_end() else ["read1"],
     )
@@ -80,6 +85,7 @@ def get_genome_for_mapping(wildcards):
         return rules.add_overhang_for_circular_chromosomes.output
     else:
         return rules.get_genome.output.fasta
+
 
 def get_fasta_index(wildcards):
     if len(config["get_genome"]["structure"]["circular"]) > 0:

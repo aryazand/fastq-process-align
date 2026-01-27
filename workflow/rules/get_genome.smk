@@ -38,6 +38,7 @@ rule add_overhang_for_circular_chromosomes:
     script:
         "../scripts/add_overhang.R"
 
+
 rule index_genome_with_overhang_chromosomes:
     input:
         "results/get_genome/genome_with_overhang.fasta",
