@@ -1,6 +1,6 @@
 rule bwa_mem2_index:
     input:
-        ref=rules.get_genome.output.fasta,
+        ref=get_genome_for_mapping,
     output:
         multiext(
             "results/bwa_mem2/index/genome",

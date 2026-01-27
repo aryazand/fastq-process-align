@@ -6,6 +6,7 @@ configfile: "config/config.yml"
 # load rules
 # -----------------------------------------------------
 include: "rules/common.smk"
+include: "rules/get_genome.smk"
 include: "rules/process_reads.smk"
 include: "rules/bowtie2.smk"
 include: "rules/bwamem2.smk"
@@ -13,6 +14,7 @@ include: "rules/star.smk"
 include: "rules/minimap2.smk"
 include: "rules/mapping_stats.smk"
 include: "rules/qc.smk"
+
 
 # optional messages, log and error handling
 # -----------------------------------------------------

@@ -1,6 +1,6 @@
 rule bowtie2_build:
     input:
-        ref=rules.get_genome.output.fasta,
+        ref=get_genome_for_mapping,
     output:
         multiext(
             "results/bowtie2/build/genome",

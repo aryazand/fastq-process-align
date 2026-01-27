@@ -1,6 +1,6 @@
 rule star_index:
     input:
-        fasta=rules.get_genome.output.fasta,
+        fasta=get_genome_for_mapping,
     output:
         directory("results/star/index/"),
     threads: 1

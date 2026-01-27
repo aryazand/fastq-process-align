@@ -12,6 +12,11 @@ get_genome:
       "RefSeq": "CDS",
       "Protein Homology": "CDS",
     ]
+  structure: 
+    circular: 
+      [
+        'NC_018936.1 Streptococcus pyogenes A20, complete sequence': 1000
+      ]
 
 processing:
   tool: "trim_galore"
@@ -24,7 +29,7 @@ processing:
     extra: "--bc-pattern=NNNNNNNN --bc-pattern2=NNNNNNNN" 
 
 mapping:
-  tool: "star"
+  tool: "bowtie2"
   bowtie2:
     index: ""
     extra: ""

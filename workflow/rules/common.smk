@@ -74,6 +74,14 @@ def get_processing_dir():
     return f"results/{config['processing']['tool']}"
 
 
+# determine version of genome to get
+def get_genome_for_mapping(wildcards):
+    if len(config["get_genome"]["structure"]["circular"]) > 0:
+        return rules.add_overhang_for_circular_chromosomes.output
+    else:
+        return rules.get_genome.output.fasta
+
+
 # get bam files
 def get_bam(wildcards):
     return expand(

@@ -1,6 +1,6 @@
 rule minimap2_index:
     input:
-        target=rules.get_genome.output.fasta,
+        target=get_genome_for_mapping,
     output:
         index="results/minimap2/index/genome.mmi",
     log:
