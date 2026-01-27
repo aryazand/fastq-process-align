@@ -81,6 +81,12 @@ def get_genome_for_mapping(wildcards):
     else:
         return rules.get_genome.output.fasta
 
+def get_fasta_index(wildcards):
+    if len(config["get_genome"]["structure"]["circular"]) > 0:
+        return rules.index_genome_with_overhang_chromosomes.output
+    else:
+        return rules.get_genome.output.fai
+
 
 # get bam files
 def get_bam(wildcards):
