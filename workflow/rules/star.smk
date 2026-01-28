@@ -24,7 +24,7 @@ rule star_align:
         ),
         idx=rules.star_index.output,
     output:
-        aln="results/star/align/{sample}/mapped.bam",
+        aln=temp("results/star/align/{sample}/mapped.bam"),
         log_final="results/star/align/{sample}/Log.final.out",
         sj="results/star/align/{sample}/SJ.out.tab",
     log:

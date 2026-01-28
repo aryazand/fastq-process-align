@@ -2,7 +2,7 @@ rule samtools_sort:
     input:
         get_bam,
     output:
-        "results/samtools/sort/{sample}.bam",
+        temp("results/samtools/sort/{sample}.bam"),
     log:
         "results/samtools/sort/{sample}.log",
     message:
@@ -13,21 +13,106 @@ rule samtools_sort:
     wrapper:
         "v7.0.0/bio/samtools/sort"
 
-
 rule samtools_index:
+	input:
+		rules.samtools_sort.output,
+	output:
+		"results/samtools/sort/{sample}.bai",
+	log:
+		"results/samtools/sort/{sample}_index.log",
+	message:
+		"index reads"
+	params:
+		extra=config["mapping"]["samtools_index"]["extra"],
+	threads: 2
+	wrapper:
+		"v7.0.0/bio/samtools/index"
+
+rule bam_to_cram:
     input:
-        "results/samtools/sort/{sample}.bam",
+        bam=rules.samtools_sort.output,
+        fa=get_genome_for_mapping,
     output:
-        "results/samtools/sort/{sample}.bai",
+        "results/samtools/cram/{sample}.cram",
     log:
-        "results/samtools/sort/{sample}_index.log",
-    message:
-        "index reads"
+        "results/samtools/cram/{sample}.log",
     params:
-        extra=config["mapping"]["samtools_index"]["extra"],
+        extra="",  # optional params string
+        region="",  # optional region string
     threads: 2
     wrapper:
-        "v7.0.0/bio/samtools/index"
+        "v8.1.1/bio/samtools/view"
+
+
+rule index_cram:
+    input:
+        rules.bam_to_cram.output,
+    output:
+        "results/samtools/cram/{sample}.crai",
+    log:
+        "results/samtools/cram/{sample}.crai.log",
+    params:
+        extra="",  # optional params string
+    threads: 4  # This value - 1 will be sent to -@
+    wrapper:
+        "v8.1.1/bio/samtools/index"
+
+
+rule umi_tools_dedup:
+	input:
+		bam=rules.samtools_sort.output,
+		bai=rules.samtools_index.output,
+	output:
+		temp("results/umi_tools/dedup/{sample}.bam"),
+	log:
+		"results/umi_tools/dedup/{sample}.log",
+	message:
+		"deduplicate reads using umi_tools"
+	params:
+		extra=config["mapping"]["umi_tools_dedup"]["extra"],
+		paired="--paired" if is_paired_end() else "",
+	container:
+		"docker://quay.io/biocontainers/umi_tools:1.1.6--py310h1fe012e_0"
+	threads: 5
+	shell:
+		"""
+		umi_tools dedup \
+			-I {input} \
+			-S {output} \
+			--log={log} \
+			{params.paired} \
+			{params.extra} 
+		"""
+
+
+rule bam_to_cram_dedup:
+    input:
+        bam=rules.umi_tools_dedup.output,
+        fa=get_genome_for_mapping,
+    output:
+        "results/umi_tools/dedup/{sample}.cram",
+    log:
+        "results/umi_tools/dedup/{sample}.cram.log",
+    params:
+        extra="",  # optional params string
+        region="",  # optional region string
+    threads: 2
+    wrapper:
+        "v8.1.1/bio/samtools/view"
+
+
+rule index_cram_dedup:
+    input:
+        rules.bam_to_cram_dedup.output,
+    output:
+        "results/umi_tools/dedup/{sample}.crai",
+    log:
+        "results/umi_tools/dedup/{sample}.crai.log",
+    params:
+        extra="",  # optional params string
+    threads: 4  # This value - 1 will be sent to -@
+    wrapper:
+        "v8.1.1/bio/samtools/index"
 
 
 rule gffread_gff:
@@ -47,52 +132,9 @@ rule gffread_gff:
         "v7.0.0/bio/gffread"
 
 
-rule umi_tools_dedup:
-    input:
-        bam="results/samtools/sort/{sample}.bam",
-        bai="results/samtools/sort/{sample}.bai",
-    output:
-        bam="results/umi_tools/dedup/{sample}.bam",
-    log:
-        "results/umi_tools/dedup/{sample}.log",
-    message:
-        "deduplicate reads using umi_tools"
-    params:
-        extra=config["mapping"]["umi_tools_dedup"]["extra"],
-        paired="--paired" if is_paired_end() else "",
-    container:
-        "docker://quay.io/biocontainers/umi_tools:1.1.6--py310h1fe012e_0"
-    threads: 5
-    shell:
-        """
-        umi_tools dedup \
-            -I {input.bam} \
-            -S {output.bam} \
-            --log={log} \
-            {params.paired} \
-            {params.extra} 
-        """
-
-
-rule samtools_index_dedup:
-    input:
-        "results/umi_tools/dedup/{sample}.bam",
-    output:
-        "results/umi_tools/dedup/{sample}.bai",
-    log:
-        "results/umi_tools/dedup/{sample}_index.log",
-    message:
-        "index deduplicated reads"
-    params:
-        extra=config["mapping"]["samtools_index"]["extra"],
-    threads: 2
-    wrapper:
-        "v7.0.0/bio/samtools/index"
-
-
 rule rseqc_infer_experiment:
     input:
-        aln="results/samtools/sort/{sample}.bam",
+        aln=get_cram,
         refgene="results/get_genome/genome.bed",
     output:
         "results/rseqc/infer_experiment/{sample}.txt",
@@ -108,7 +150,7 @@ rule rseqc_infer_experiment:
 
 rule rseqc_bam_stat:
     input:
-        "results/samtools/sort/{sample}.bam",
+        get_cram,
     output:
         "results/rseqc/bam_stat/{sample}.txt",
     threads: 2
@@ -124,8 +166,8 @@ rule rseqc_bam_stat:
 
 rule deeptools_coverage:
     input:
-        bam=get_bam_2,
-        bai=get_bai,
+        bam=get_cram,
+        bai=get_crai,
     output:
         "results/deeptools/coverage/{sample}.bw",
     wildcard_constraints:

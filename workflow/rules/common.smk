@@ -98,18 +98,18 @@ def get_bam(wildcards):
     )
 
 
-def get_bam_2(wildcards):
+def get_cram(wildcards):
     if config["mapping"]["umi_tools_dedup"]["enabled"]:
-        return f"results/umi_tools/dedup/{wildcards.sample}.bam"
+        return rules.bam_to_cram_dedup.output
     else:
-        return f"results/samtools/sort/{wildcards.sample}.bam"
+        return rules.bam_to_cram.output
 
 
-def get_bai(wildcards):
+def get_crai(wildcards):
     if config["mapping"]["umi_tools_dedup"]["enabled"]:
-        return f"results/umi_tools/dedup/{wildcards.sample}.bai"
+        return rules.index_cram_dedup.output
     else:
-        return f"results/samtools/sort/{wildcards.sample}.bai"
+        return rules.index_cram.output
 
 
 # get input for multiqc

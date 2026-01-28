@@ -17,7 +17,7 @@ rule minimap2_align:
         target=rules.minimap2_index.output.index,
         query=get_processed_fastq,
     output:
-        "results/minimap2/align/{sample}/mapped.bam",
+        temp("results/minimap2/align/{sample}/mapped.bam"),
     log:
         "results/minimap2/align/{sample}/mapped.log",
     params:
