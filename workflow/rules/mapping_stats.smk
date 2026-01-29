@@ -13,20 +13,22 @@ rule samtools_sort:
     wrapper:
         "v7.0.0/bio/samtools/sort"
 
+
 rule samtools_index:
-	input:
-		rules.samtools_sort.output,
-	output:
-		"results/samtools/sort/{sample}.bai",
-	log:
-		"results/samtools/sort/{sample}_index.log",
-	message:
-		"index reads"
-	params:
-		extra=config["mapping"]["samtools_index"]["extra"],
-	threads: 2
-	wrapper:
-		"v7.0.0/bio/samtools/index"
+    input:
+        rules.samtools_sort.output,
+    output:
+        "results/samtools/sort/{sample}.bai",
+    log:
+        "results/samtools/sort/{sample}_index.log",
+    message:
+        "index reads"
+    params:
+        extra=config["mapping"]["samtools_index"]["extra"],
+    threads: 2
+    wrapper:
+        "v7.0.0/bio/samtools/index"
+
 
 rule bam_to_cram:
     input:
@@ -59,30 +61,30 @@ rule index_cram:
 
 
 rule umi_tools_dedup:
-	input:
-		bam=rules.samtools_sort.output,
-		bai=rules.samtools_index.output,
-	output:
-		temp("results/umi_tools/dedup/{sample}.bam"),
-	log:
-		"results/umi_tools/dedup/{sample}.log",
-	message:
-		"deduplicate reads using umi_tools"
-	params:
-		extra=config["mapping"]["umi_tools_dedup"]["extra"],
-		paired="--paired" if is_paired_end() else "",
-	container:
-		"docker://quay.io/biocontainers/umi_tools:1.1.6--py310h1fe012e_0"
-	threads: 5
-	shell:
-		"""
-		umi_tools dedup \
-			-I {input} \
-			-S {output} \
-			--log={log} \
-			{params.paired} \
-			{params.extra} 
-		"""
+    input:
+        bam=rules.samtools_sort.output,
+        bai=rules.samtools_index.output,
+    output:
+        temp("results/umi_tools/dedup/{sample}.bam"),
+    log:
+        "results/umi_tools/dedup/{sample}.log",
+    message:
+        "deduplicate reads using umi_tools"
+    params:
+        extra=config["mapping"]["umi_tools_dedup"]["extra"],
+        paired="--paired" if is_paired_end() else "",
+    container:
+        "docker://quay.io/biocontainers/umi_tools:1.1.6--py310h1fe012e_0"
+    threads: 5
+    shell:
+        """
+        umi_tools dedup \
+            -I {input} \
+            -S {output} \
+            --log={log} \
+            {params.paired} \
+            {params.extra} 
+        """
 
 
 rule bam_to_cram_dedup:

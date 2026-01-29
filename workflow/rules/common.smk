@@ -77,7 +77,7 @@ def get_processing_dir():
 # determine version of genome to get
 def get_genome_for_mapping(wildcards):
     if len(config["get_genome"]["structure"]["circular"]) > 0:
-        return rules.add_overhang_for_circular_chromosomes.output
+        return rules.add_overhang_for_circular_chromosomes.output.fasta
     else:
         return rules.get_genome.output.fasta
 

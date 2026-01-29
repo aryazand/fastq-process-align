@@ -30,7 +30,7 @@ rule add_overhang_for_circular_chromosomes:
     input:
         "results/get_genome/genome.fasta",
     output:
-        "results/get_genome/genome_with_overhang.fasta",
+        fasta="results/get_genome/genome_with_overhang.fasta",
     params:
         overhang=config["get_genome"]["structure"]["circular"],
     container:
