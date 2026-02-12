@@ -2,32 +2,36 @@ rule remove_overhang:
     input:
         bam=get_bam,
         fai=get_fasta_index,
-        awk=workflow.source_path("../scripts/remove_overhang.awk")
+        adjust_overhang_awk=workflow.source_path("../scripts/adjust_overhang.awk"),
+        adjust_header_awk=workflow.source_path("../scripts/adjust_bam_header.awk"),
     output:
-        temp("results/samtools/{sample}.remove_overhang.bam"),
+        "results/samtools/process_overhang/{sample}.bam",
     log:
-        "results/samtools/{sample}.remove_overhang.log",
+        sam="results/samtools/process_overhang/{sample}.log",
+        stats="results/samtools/process_overhang/{sample}_overhang_stats.txt",
     message:
         "process overhangs in reads using custom awk script"
     params:
-        circular_chroms=",".join(config["get_genome"]["structure"]["circular"].keys()),
-        overhang_lengths=",".join(
-            f"{chrom}:{overhang}"
-            for chrom, overhang in config["get_genome"]["structure"][
-                "circular"
-            ].items()
-        ),
+        overhang_lengths=config["get_genome"]["structure"]["circular"][
+            "overhang_length"
+        ],
         chromosome_lengths=lambda wildcards, input: get_chrom_lengths_from_fai(
             input.fai[0]
         ),
     shell:
         """
-        samtools view -h {input.bam} \
-            | gawk -f {input.awk} \
-                  -v circular_chroms="{params.circular_chroms}" \
-                  -v chromosome_lengths="{params.chromosome_lengths}" \
-                  -v overhang_lengths="{params.overhang_lengths}" \
-            | samtools view -b -o {output} - 2> {log}
+        # Extract and modify header
+        samtools view -H {input.bam} | \
+            awk -v chrom_lengths="{params.chromosome_lengths}" \
+                -f {input.adjust_header_awk} > header.sam
+        
+        # Process alignments with gawk
+        samtools view -h {input.bam} | \
+            gawk -v chrom_lengths="{params.chromosome_lengths}" \
+                -f {input.adjust_overhang_awk} 2> {log.stats} | \
+            samtools view -b -H header.sam -o {output} - 2> {log.sam}
+        
+        rm header.sam
         """
 
 
@@ -72,7 +76,7 @@ rule bam_to_cram:
     log:
         "results/samtools/cram/{sample}.log",
     params:
-        extra=lambda input:"-C -T {input.fa}",  # optional params string
+        extra=lambda input: "-C -T {input.fa}",  # optional params string
         region="",  # optional region string
     threads: 2
     wrapper:
@@ -129,7 +133,7 @@ rule bam_to_cram_dedup:
     log:
         "results/umi_tools/dedup/{sample}.cram.log",
     params:
-        extra=lambda wildcards, input:"-C",  # optional params string
+        extra=lambda wildcards, input: "-C",  # optional params string
         region="",  # optional region string
     threads: 2
     wrapper:

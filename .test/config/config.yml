@@ -13,8 +13,10 @@ get_genome:
       "Protein Homology": "CDS",
     ]
   structure: 
-    circular: 
-      NC_018936.1: 1000
+    circular:
+      circular_chromosomes:
+         - "NC_018936.1" 
+      overhang_length: 1000
 
 processing:
   tool: "trim_galore"

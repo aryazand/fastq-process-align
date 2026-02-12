@@ -1,13 +1,14 @@
 library(Biostrings)
 
 genome <- readDNAStringSet(snakemake@input[[1]])
-shift_amounts <- snakemake@params[["overhang"]]
+circular_chrom_info <- snakemake@params[["overhang"]]
 
-for (i in seq_along(shift_amounts)) {
-    chr_name <- names(shift_amounts)[i]
-    n <- shift_amounts[[i]]
-    
-    print(n)
+chrom_names <- unlist(circular_chrom_info$circular_chromosomes)
+overhang_length <- circular_chrom_info$overhang_length
+
+for (i in seq_along(chrom_names)) {
+    chr_name <- chrom_names[i]
+    n <- overhang_length
 
     # Using regex to match chromosomes that start with the specified name
     
