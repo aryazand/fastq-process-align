@@ -39,7 +39,7 @@ rule bam_to_cram:
     log:
         "results/samtools/cram/{sample}.log",
     params:
-        extra="",  # optional params string
+        extra=lambda input:"-C -T {input.fa}",  # optional params string
         region="",  # optional region string
     threads: 2
     wrapper:
@@ -90,13 +90,13 @@ rule umi_tools_dedup:
 rule bam_to_cram_dedup:
     input:
         bam=rules.umi_tools_dedup.output,
-        fa=get_genome_for_mapping,
+        ref="results/get_genome/genome.fasta",
     output:
         "results/umi_tools/dedup/{sample}.cram",
     log:
         "results/umi_tools/dedup/{sample}.cram.log",
     params:
-        extra="",  # optional params string
+        extra=lambda wildcards, input:"-C",  # optional params string
         region="",  # optional region string
     threads: 2
     wrapper:
