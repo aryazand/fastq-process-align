@@ -31,19 +31,19 @@ rule umi_tools_extract:
         "extracting UMIs using umi_tools"
     params:
         extra=config["processing"]["umi_tools_extract"]["extra"],
-        input_args=lambda wildcards, input: (
-            f"-I {input.fastq[0]} -S {wildcards.sample}_read1.fastq.gz "
-            f"--read2-in={input.fastq[1]} --read2-out={wildcards.sample}_read2.fastq.gz"
+        input_args=lambda wildcards, input, output: (
+            f"-I {input.fastq[0]} -S {output.fastq[0]} "
+            f"--read2-in={input.fastq[1]} --read2-out={output.fastq[1]}"
             if is_paired_end()
-            else f"-I {input.fastq[0]} -S {wildcards.sample}_read1.fastq.gz"
+            else f"-I {input.fastq[0]} -S {output.fastq[0]}"
         ),
     container:
         "docker://quay.io/biocontainers/umi_tools:1.1.6--py310h1fe012e_0"
     threads: 1
     shell:
         """
+        mkdir -p $(dirname {output.fastq[0]})
         umi_tools extract {params.extra} {params.input_args} -L {log}
-        mv {wildcards.sample}_*.fastq.gz results/umi_tools/extract/
         """
 
 
