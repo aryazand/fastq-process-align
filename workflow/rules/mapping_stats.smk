@@ -2,8 +2,7 @@ rule remove_overhang:
     input:
         bam=get_bam,
         fai=get_fasta_index,
-        adjust_overhang_awk=workflow.source_path("../scripts/adjust_overhang.awk"),
-        adjust_header_awk=workflow.source_path("../scripts/adjust_bam_header.awk"),
+        adjust_overhang_awk=workflow.source_path("../scripts/adjust_overhang.awk")
     output:
         "results/samtools/process_overhang/{sample}.bam",
     log:
@@ -20,18 +19,11 @@ rule remove_overhang:
         ),
     shell:
         """
-        # Extract and modify header
-        samtools view -H {input.bam} | \
-            awk -v chrom_lengths="{params.chromosome_lengths}" \
-                -f {input.adjust_header_awk} > header.sam
-        
-        # Process alignments with gawk
         samtools view -h {input.bam} | \
-            gawk -v chrom_lengths="{params.chromosome_lengths}" \
-                -f {input.adjust_overhang_awk} 2> {log.stats} | \
-            samtools view -b -H header.sam -o {output} - 2> {log.sam}
-        
-        rm header.sam
+            awk -f {input.adjust_overhang_awk} \
+                -v chrom_lengths="{params.chromosome_lengths}" \
+                2> {log.stats} | \
+            samtools view -bh -o {output} - 2> {log.sam}
         """
 
 
