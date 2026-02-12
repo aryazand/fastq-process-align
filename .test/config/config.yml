@@ -14,9 +14,7 @@ get_genome:
     ]
   structure: 
     circular: 
-      [
-        'NC_018936.1 Streptococcus pyogenes A20, complete sequence': 1000
-      ]
+      NC_018936.1: 1000
 
 processing:
   tool: "trim_galore"

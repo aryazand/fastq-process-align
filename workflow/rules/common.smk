@@ -89,6 +89,18 @@ def get_fasta_index(wildcards):
         return rules.get_genome.output.fai
 
 
+def get_chrom_lengths_from_fai(fai_path):
+    """Read lengths from .fai, subtract overhang for circular chroms"""
+    circular = config["get_genome"]["structure"]["circular"]
+    lengths = {}
+    with open(fai_path) as f:
+        for line in f:
+            chrom, length = line.split("\t")[0], int(line.split("\t")[1])
+            if chrom in circular:
+                lengths[chrom] = length - circular[chrom]
+    return ",".join(f"{chrom}:{length}" for chrom, length in lengths.items())
+
+
 # get bam files
 def get_bam(wildcards):
     return expand(

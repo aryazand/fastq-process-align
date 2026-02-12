@@ -1,6 +1,39 @@
+rule remove_overhang:
+    input:
+        bam=get_bam,
+        fai=get_fasta_index,
+        awk=workflow.source_path("../scripts/remove_overhang.awk")
+    output:
+        temp("results/samtools/{sample}.remove_overhang.bam"),
+    log:
+        "results/samtools/{sample}.remove_overhang.log",
+    message:
+        "process overhangs in reads using custom awk script"
+    params:
+        circular_chroms=",".join(config["get_genome"]["structure"]["circular"].keys()),
+        overhang_lengths=",".join(
+            f"{chrom}:{overhang}"
+            for chrom, overhang in config["get_genome"]["structure"][
+                "circular"
+            ].items()
+        ),
+        chromosome_lengths=lambda wildcards, input: get_chrom_lengths_from_fai(
+            input.fai[0]
+        ),
+    shell:
+        """
+        samtools view -h {input.bam} \
+            | gawk -f {input.awk} \
+                  -v circular_chroms="{params.circular_chroms}" \
+                  -v chromosome_lengths="{params.chromosome_lengths}" \
+                  -v overhang_lengths="{params.overhang_lengths}" \
+            | samtools view -b -o {output} - 2> {log}
+        """
+
+
 rule samtools_sort:
     input:
-        get_bam,
+        rules.remove_overhang.output,
     output:
         temp("results/samtools/sort/{sample}.bam"),
     log:
