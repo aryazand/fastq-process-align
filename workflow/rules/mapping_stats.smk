@@ -4,7 +4,7 @@ rule remove_overhang:
         fai=get_fasta_index,
         adjust_overhang_awk=workflow.source_path("../scripts/adjust_overhang.awk")
     output:
-        "results/samtools/process_overhang/{sample}.bam",
+        temp("results/samtools/process_overhang/{sample}.bam"),
     log:
         sam="results/samtools/process_overhang/{sample}.log",
         stats="results/samtools/process_overhang/{sample}_overhang_stats.txt",
@@ -62,7 +62,7 @@ rule samtools_index:
 rule bam_to_cram:
     input:
         bam=rules.samtools_sort.output,
-        fa=get_genome_for_mapping,
+        fa=rules.get_genome.output.fasta,
     output:
         "results/samtools/cram/{sample}.cram",
     log:
