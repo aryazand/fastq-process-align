@@ -23,7 +23,7 @@ rule bwa_mem2:
         reads=get_processed_fastq,
         idx=rules.bwa_mem2_index.output,
     output:
-        temp("results/bwa_mem2/align/{sample}/mapped.bam"),
+        "results/bwa_mem2/align/{sample}/mapped.bam",
     log:
         "results/bwa_mem2/align/{sample}/mapped.log",
     message:
