@@ -68,7 +68,7 @@ rule bam_to_cram:
     log:
         "results/samtools/cram/{sample}.log",
     params:
-        extra=lambda input: "-C -T {input.fa}",  # optional params string
+        extra=lambda wildcards, input: f"-C -T {input.fa}",  # optional params string
         region="",  # optional region string
     threads: 2
     wrapper:
