@@ -2,7 +2,7 @@ rule remove_overhang:
     input:
         bam=get_bam,
         fai=get_fasta_index,
-        adjust_overhang_awk=workflow.source_path("../scripts/adjust_overhang.awk")
+        adjust_overhang_awk=workflow.source_path("../scripts/adjust_overhang.awk"),
     output:
         temp("results/samtools/process_overhang/{sample}.bam"),
     log:
@@ -200,18 +200,20 @@ rule deeptools_coverage:
         bam=get_cram,
         bai=get_crai,
     output:
-        "results/deeptools/coverage/{sample}.bw",
+        "results/deeptools/coverage/{sample}_{direction}.bw",
     wildcard_constraints:
-        sample="|".join(map(re.escape, samples.index)),
+        direction="for|forward|plus|rev|reverse|minus",
     threads: 4
     params:
-        effective_genome_size=config["mapping_stats"]["deeptools_coverage"][
-            "genome_size"
-        ],
-        extra=config["mapping_stats"]["deeptools_coverage"]["extra"],
+        extra=lambda wildcards: config["mapping_stats"]["deeptools_coverage"]["extra"]
+        + (
+            " --filterRNAstrand forward"
+            if wildcards.direction in ["for", "forward", "plus"]
+            else " --filterRNAstrand reverse"
+        ),
     log:
-        "results/deeptools/coverage/{sample}.log",
+        "results/deeptools/coverage/{sample}_{direction}.log",
     message:
-        "generate normalized coverage files using deeptools"
+        "generate normalized coverage using deeptools"
     wrapper:
         "v7.0.0/bio/deeptools/bamcoverage"
