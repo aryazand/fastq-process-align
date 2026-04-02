@@ -126,6 +126,16 @@ def get_crai(wildcards):
         return rules.index_cram.output
 
 
+def deeptools_extra(wildcards):
+    base = config["mapping_stats"]["deeptools_coverage"]["extra"]
+    strand = (
+        " --filterRNAstrand forward"
+        if wildcards.direction in ["for", "forward", "plus"]
+        else " --filterRNAstrand reverse"
+    )
+    return base + strand
+
+
 # get input for multiqc
 def get_multiqc_input(wildcards):
     result = []

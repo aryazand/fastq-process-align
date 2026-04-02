@@ -205,12 +205,7 @@ rule deeptools_coverage:
         direction="for|forward|plus|rev|reverse|minus",
     threads: 4
     params:
-        extra=lambda wildcards: config["mapping_stats"]["deeptools_coverage"]["extra"]
-        + (
-            " --filterRNAstrand forward"
-            if wildcards.direction in ["for", "forward", "plus"]
-            else " --filterRNAstrand reverse"
-        ),
+        extra=deeptools_extra,
     log:
         "results/deeptools/coverage/{sample}_{direction}.log",
     message:
