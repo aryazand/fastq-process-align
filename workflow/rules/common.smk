@@ -16,6 +16,9 @@ samples = (
 validate(samples, schema="../../config/schemas/samples.schema.yml")
 validate(config, schema="../../config/schemas/config.schema.yml")
 
+###############################
+# FASTQ-RELATED FUNCTIONS
+###############################
 
 # determine input type
 def is_paired_end():
@@ -68,11 +71,19 @@ def get_processed_fastq(wildcards, regex=None):
     else:
         return [s for s in processed_fastq if re.search(regex, s)]
 
+def get_fasta_index(wildcards):
+    if len(config["get_genome"]["structure"]["circular"]) > 0:
+        return rules.index_genome_with_overhang_chromosomes.output
+    else:
+        return rules.get_genome.output.fai
 
 # determine processing tool output directory
 def get_processing_dir():
     return f"results/{config['processing']['tool']}"
 
+###############################
+# GENOME-RELATED FUNCTIONS
+###############################
 
 # determine version of genome to get
 def get_genome_for_mapping(wildcards):
@@ -80,13 +91,6 @@ def get_genome_for_mapping(wildcards):
         return rules.add_overhang_for_circular_chromosomes.output.fasta
     else:
         return rules.get_genome.output.fasta
-
-
-def get_fasta_index(wildcards):
-    if len(config["get_genome"]["structure"]["circular"]) > 0:
-        return rules.index_genome_with_overhang_chromosomes.output
-    else:
-        return rules.get_genome.output.fai
 
 
 def get_chrom_lengths_from_fai(fai_path):
@@ -102,6 +106,9 @@ def get_chrom_lengths_from_fai(fai_path):
                 lengths[chrom] = length - overhang_length
     return ",".join(f"{chrom}:{length}" for chrom, length in lengths.items())
 
+###############################
+# ALIGNMENT-RELATED FUNCTIONS
+###############################
 
 # get bam files
 def get_bam(wildcards):
@@ -125,6 +132,9 @@ def get_crai(wildcards):
     else:
         return rules.index_cram.output
 
+###############################
+# COVERAGE-RELATED FUNCTIONS
+###############################
 
 def deeptools_extra(wildcards):
     base = config["mapping_stats"]["deeptools_coverage"]["extra"]
@@ -135,6 +145,10 @@ def deeptools_extra(wildcards):
     )
     return base + strand
 
+
+####################
+# MULTIQC FUNCTION
+####################
 
 # get input for multiqc
 def get_multiqc_input(wildcards):
