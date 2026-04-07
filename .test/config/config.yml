@@ -25,7 +25,7 @@ processing:
   trim_galore:
     extra: "--gzip --paired"
   umi_tools_extract:
-    enabled: true  # Set to true to enable UMI extraction
+    enabled: false  # Set to true to enable UMI extraction
     extra: "--bc-pattern=NNNNNNNN --bc-pattern2=NNNNNNNN" 
 
 mapping:
@@ -50,8 +50,11 @@ mapping:
     extra: "-m 4G"
   samtools_index:
     extra: ""
+  postprocessing: # parameters to provide samtools view 
+      filter: ""
+      region: ""
   umi_tools_dedup: 
-    enabled: true  # Set to true to enable deduplication
+    enabled: false  # Set to true to enable deduplication
     extra: "--paired"  # or directional, cluster, adjacency, etc.
 
 mapping_stats:

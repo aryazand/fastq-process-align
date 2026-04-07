@@ -12,11 +12,16 @@ get_genome:
       "RefSeq": "CDS",
       "Protein Homology": "CDS",
     ]
+  structure: 
+    circular:
+      circular_chromosomes:
+         - "NC_018936.1" 
+      overhang_length: 1000
 
 processing:
-  tool: "fastp"
+  tool: "trim_galore"
   fastp:
-    extra: ""
+    extra: "--detect_adapter_for_pe"
   trim_galore:
     extra: "--gzip --paired"
   umi_tools_extract:
@@ -24,7 +29,7 @@ processing:
     extra: "--bc-pattern=NNNNNNNN --bc-pattern2=NNNNNNNN" 
 
 mapping:
-  tool: "bwa_mem2"
+  tool: "bowtie2"
   bowtie2:
     index: ""
     extra: ""
@@ -45,6 +50,9 @@ mapping:
     extra: "-m 4G"
   samtools_index:
     extra: ""
+  postprocessing: # parameters to provide samtools view 
+      filter: ""
+      region: ""
   umi_tools_dedup: 
     enabled: false  # Set to true to enable deduplication
     extra: "--paired"  # or directional, cluster, adjacency, etc.
@@ -65,6 +73,3 @@ qc:
     extra: "--verbose --dirs"
   fastqc:
     extra: "--quiet"
-
-report:
-  minimum_variant_count: 2

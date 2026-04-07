@@ -20,6 +20,7 @@ validate(config, schema="../../config/schemas/config.schema.yml")
 # FASTQ-RELATED FUNCTIONS
 ###############################
 
+
 # determine input type
 def is_paired_end():
     if samples["read2"].isna().all():
@@ -71,19 +72,23 @@ def get_processed_fastq(wildcards, regex=None):
     else:
         return [s for s in processed_fastq if re.search(regex, s)]
 
+
 def get_fasta_index(wildcards):
     if len(config["get_genome"]["structure"]["circular"]) > 0:
         return rules.index_genome_with_overhang_chromosomes.output
     else:
         return rules.get_genome.output.fai
 
+
 # determine processing tool output directory
 def get_processing_dir():
     return f"results/{config['processing']['tool']}"
 
+
 ###############################
 # GENOME-RELATED FUNCTIONS
 ###############################
+
 
 # determine version of genome to get
 def get_genome_for_mapping(wildcards):
@@ -106,9 +111,11 @@ def get_chrom_lengths_from_fai(fai_path):
                 lengths[chrom] = length - overhang_length
     return ",".join(f"{chrom}:{length}" for chrom, length in lengths.items())
 
+
 ###############################
 # ALIGNMENT-RELATED FUNCTIONS
 ###############################
+
 
 # get bam files
 def get_bam(wildcards):
@@ -119,22 +126,73 @@ def get_bam(wildcards):
     )
 
 
+###############################
+# ALIGNMENT PROCESSING-RELATED FUNCTIONS
+###############################
+
+
+def get_processing_steps():
+    steps = []
+    if config.get("mapping").get("postprocessing").get("filter") is not None:
+        steps.append("filter")
+    if len(config["get_genome"]["structure"]["circular"]) > 0:
+        steps.append("remove_overhang")
+    if config.get("mapping").get("umi_tools_dedup").get("enabled"):
+        steps.append("dedup")
+    print(f"Processing steps: {steps}")
+    return steps
+
+
+def get_removed_overhang_input(wildcards):
+    process_steps = get_processing_steps()
+    if "filter" in process_steps:
+        return rules.samtools_filter.output.bam
+    else:
+        return rules.samtools_sort.output
+
+
+def get_umi_tools_dedup_input(wildcards):
+    process_steps = get_processing_steps()
+    if "remove_overhang" in process_steps:
+        return rules.remove_overhang.output
+    elif "filter" in process_steps:
+        return rules.samtools_filter.output
+    else:
+        return rules.samtools_sort.output
+
+
+def bam_to_cram_post_processing_input(wildcards):
+    process_steps = get_processing_steps()
+    if "dedup" in process_steps:
+        return rules.umi_tools_dedup.output
+    elif "remove_overhang" in process_steps:
+        return rules.remove_overhang.output
+    elif "filter" in process_steps:
+        return rules.samtools_filter.output
+    else:
+        return rules.samtools_sort.output
+
+
 def get_cram(wildcards):
-    if config["mapping"]["umi_tools_dedup"]["enabled"]:
-        return rules.bam_to_cram_dedup.output
+    process_steps = get_processing_steps()
+    if len(process_steps) > 0:
+        return rules.bam_to_cram_post_processing.output
     else:
         return rules.bam_to_cram.output
 
 
 def get_crai(wildcards):
-    if config["mapping"]["umi_tools_dedup"]["enabled"]:
-        return rules.index_cram_dedup.output
+    process_steps = get_processing_steps()
+    if len(process_steps) > 0:
+        return rules.index_cram_post_processing.output
     else:
         return rules.index_cram.output
+
 
 ###############################
 # COVERAGE-RELATED FUNCTIONS
 ###############################
+
 
 def deeptools_extra(wildcards):
     base = config["mapping_stats"]["deeptools_coverage"]["extra"]
@@ -149,6 +207,7 @@ def deeptools_extra(wildcards):
 ####################
 # MULTIQC FUNCTION
 ####################
+
 
 # get input for multiqc
 def get_multiqc_input(wildcards):
@@ -185,4 +244,9 @@ def get_multiqc_input(wildcards):
         sample=samples.index,
         direction=["for", "rev"],
     )
+    if config["mapping"]["umi_tools_dedup"]["enabled"]:
+        result += expand(
+            "results/processed_alignment/dedup/{sample}.bam",
+            sample=samples.index,
+        )
     return result
