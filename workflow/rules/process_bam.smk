@@ -25,9 +25,38 @@ rule samtools_filter:
     threads: 2
     shell:
         """
-        samtools view -bh {params.extra} -T {input.fa} -@ {threads} -o {output.bam}.temp {input.cram} {params.region} 2> {log.view}
-        samtools view -H {output.bam}.temp | awk '$1 == "@SQ" && $2 != "SN:{params.region}" {{ next }}{{ print }}' | samtools reheader - {output.bam}.temp > {output.bam} 2> {log.reaheader} 
-        rm {output.bam}.temp
+        # 1. samtools view extracts the target chromosome and includes the header (-h)
+        # 2. awk processes the SAM stream line by line
+        # 3. The output is piped back into samtools to compress into the final BAM
+        
+        samtools view -h {input.cram} {params.region} | \
+        awk -F'\\t' -v OFS='\\t' -v chrom="{params.region}" '
+        /^@SQ/ {{
+            # Split the second column (e.g., SN:chr1) by colon
+            split($2, a, ":");
+            # Only print the header line if the chromosome matches our target
+            if (a[2] == chrom) print;
+            next;
+        }}
+        /^@/ {{ 
+            # Print all other header lines (e.g., @HD, @RG, @PG)
+            print; 
+            next; 
+        }}
+        {{
+            # For alignments: column 7 ($7) holds the mate reference sequence name.
+            # "=" means the mate is on the exact same chromosome.
+            # "*" means the read is single-end (or mate is unmapped).
+            # chrom catches edge cases where the aligner writes the explicit name instead of "=".
+            if ($7 == "=" || $7 == chrom || $7 == "*") {{
+                print;
+            }}
+        }}' | \
+        samtools view -@ {threads} -O BAM -o {output.bam}
+
+        # samtools view -bh {params.extra} -T {input.fa} -@ {threads} -o {output.bam}.temp {input.cram} {params.region} 2> {log.view}
+        # samtools view -h {output.bam}.temp | awk '$1 == "@SQ" && $2 != "SN:{params.region}" {{ next }}{{ print }}' | samtools reheader - {output.bam}.temp > {output.bam} 2> {log.reaheader} 
+        # rm {output.bam}.temp
         """
 
 
