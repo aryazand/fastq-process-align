@@ -96,12 +96,13 @@ rule umi_tools_dedup:
 rule bam_to_cram_post_processing:
     input:
         bam=bam_to_cram_post_processing_input,
+        fa=get_genome_for_mapping,
     output:
         "results/processed_alignment/cram/{sample}.cram",
     log:
         "results/processed_alignment/cram/{sample}.cram.log",
     params:
-        extra=lambda wildcards, input: "-C",  # optional params string
+        extra=lambda wildcards, input: f"-C -T {input.fa}",  # optional params string
         region="",  # optional region string
     threads: 2
     wrapper:

@@ -17,6 +17,7 @@ rule samtools_sort:
 rule bam_to_cram:
     input:
         bam=rules.samtools_sort.output,
+        fa=get_genome_for_mapping,
     output:
         "results/alignment/{sample}.cram",
     log:
@@ -26,7 +27,7 @@ rule bam_to_cram:
         region="",  # optional region string
     threads: 2
     wrapper:
-        "v8.1.1/bio/samtools/view"
+        "v9.4.1/bio/samtools/view"
 
 
 rule index_cram:
