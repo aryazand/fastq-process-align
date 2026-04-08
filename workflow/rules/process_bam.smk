@@ -9,21 +9,31 @@
 
 rule samtools_filter:
     input:
-        rules.samtools_sort.output,
+        cram=rules.bam_to_cram.output,
+        crai=rules.index_cram.output,
+        fa=get_genome_for_mapping,
     output:
         bam="results/processed_alignment/samtools_filter/{sample}.bam",
-        idx="results/processed_alignment/samtools_filter/{sample}.bai",
     log:
-        "results/processed_alignment/samtools_filter/{sample}.log",
+        view="results/processed_alignment/samtools_filter/{sample}_view.log",
+        reaheader="results/processed_alignment/samtools_filter/{sample}_reheader.log",
+    container:
+        "docker://quay.io/biocontainers/samtools:1.23.1--ha83d96e_0"
     params:
         extra=config["mapping"]["postprocessing"]["filter"],  # optional params string
         region=config["mapping"]["postprocessing"]["region"],  # optional region string
     threads: 2
-    wrapper:
-        "v9.4.1/bio/samtools/view"
+    shell:
+        """
+        samtools view -bh {params.extra} -T {input.fa} -@ {threads} -o {output.bam}.temp {input.cram} {params.region} 2> {log.view}
+        samtools view -H {output.bam}.temp | awk '$1 == "@SQ" && $2 != "SN:{params.region}" {{ next }}{{ print }}' | samtools reheader - {output.bam}.temp > {output.bam} 2> {log.reaheader} 
+        rm {output.bam}.temp
+        """
 
 
 rule remove_overhang:
+    # Needs to be updated with clearer code
+    # Needs a container
     input:
         bam=get_removed_overhang_input,
         fai=get_fasta_index,
