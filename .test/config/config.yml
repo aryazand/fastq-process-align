@@ -52,7 +52,7 @@ mapping:
     extra: ""
   postprocessing: # parameters to provide samtools view 
       filter: ""
-      region: ""
+      region: "NC_018936.1"
   umi_tools_dedup: 
     enabled: false  # Set to true to enable deduplication
     extra: "--paired"  # or directional, cluster, adjacency, etc.
