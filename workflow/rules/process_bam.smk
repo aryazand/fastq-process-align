@@ -59,14 +59,28 @@ rule remove_overhang:
             samtools view -bh -o {output} - 2> {log.sam}
         """
 
+rule sort_umitools_input:
+    input:
+        get_umi_tools_dedup_input,
+    output:
+        temp("results/processed_alignment/prep_for_dedup/{sample}.bam"),
+    log:
+        "results/processed_alignment/prep_for_dedup/{sample}_sort.log",
+    message:
+        "re-sort reads after mapping regardless if mapper did"
+    params:
+        extra="",
+    threads: 2
+    wrapper:
+        "v7.0.0/bio/samtools/sort"
 
 rule index_umitools_input:
     input:
-        bam=get_umi_tools_dedup_input,
+        bam=rules.sort_umitools_input.output,
     output:
-        "results/processed_alignment/index_prior_to_dedup/{sample}.bam.bai",
+        temp("results/processed_alignment/prep_for_dedup/{sample}.bam.bai"),
     log:
-        "results/processed_alignment/index_prior_to_dedup/{sample}.log",
+        "results/processed_alignment/prep_for_dedup/{sample}_index.log",
     params:
         extra="",  # optional params string
     threads: 4  # This value - 1 will be sent to -@
@@ -76,7 +90,7 @@ rule index_umitools_input:
 
 rule umi_tools_dedup:
     input:
-        bam=get_umi_tools_dedup_input,
+        bam=rules.sort_umitools_input.output,
         bai=rules.index_umitools_input.output,
     output:
         temp("results/processed_alignment/dedup/{sample}.bam"),
