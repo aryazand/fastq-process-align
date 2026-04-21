@@ -56,8 +56,10 @@ rule remove_overhang:
             awk -f {input.adjust_overhang_awk} \
                 -v chrom_lengths="{params.chromosome_lengths}" \
                 2> {log.stats} | \
-            samtools view -bh -o {output} - 2> {log.sam}
+            samtools view -bh | \
+            samtools sort -o {output} - 2> {log.sam}
         """
+
 
 rule sort_umitools_input:
     input:
@@ -73,6 +75,7 @@ rule sort_umitools_input:
     threads: 2
     wrapper:
         "v7.0.0/bio/samtools/sort"
+
 
 rule index_umitools_input:
     input:
